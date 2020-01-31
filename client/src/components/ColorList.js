@@ -135,13 +135,16 @@ const ColorList = ({ colors, updateColors }) => {
         placeholder="name"
       />
       <input
-        type="color"
+        type="text"
         name="hex"
         value={newColor.code.hex}
-        onChange={handleChange}
+        onChange={e => setNewColor({
+          ...newColor,
+          code: {hex: e.target.value}
+        })}
         placeholder="hex"
       />
-      <buton onClick={addColor}>Add new color</buton>
+      <button onClick={addColor}>Add new color</button>
     </div>
   );
 };
