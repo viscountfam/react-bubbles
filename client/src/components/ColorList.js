@@ -10,11 +10,39 @@ const ColorList = ({ colors, updateColors }) => {
   console.log(colors);
   const [editing, setEditing] = useState(false);
   const [colorToEdit, setColorToEdit] = useState(initialColor);
+  const [newColor, setNewColor] = useState({
+    color: "",
+    code: {
+      hex: "",
+      id: Date.now()
+    }
+  })
 
   const editColor = color => {
     setEditing(true);
     setColorToEdit(color);
   };
+
+  const handleChange = event => {
+    setNewColor({
+      ...newColor,
+      [event.target.name]: event.target.value
+    })
+  }
+
+  const addColor = () => {
+    axiosWithAuth()
+      .post(`colors`, newColor)
+      .then(res => { console.log(`${newColor.color} has been added`, res)
+      axiosWithAuth()
+            .get(`colors`)
+              .then(res => {
+                console.log("Updated color list", res)
+                updateColors(res.data)
+              })
+    })
+
+  }
 
   const saveEdit = e => {
     e.preventDefault();
@@ -99,6 +127,21 @@ const ColorList = ({ colors, updateColors }) => {
       )}
       <div className="spacer" />
       {/* stretch - build another form here to add a color */}
+      <input
+        type="text"
+        name="color"
+        value={newColor.color}
+        onChange={handleChange}
+        placeholder="name"
+      />
+      <input
+        type="color"
+        name="hex"
+        value={newColor.code.hex}
+        onChange={handleChange}
+        placeholder="hex"
+      />
+      <buton onClick={addColor}>Add new color</buton>
     </div>
   );
 };
