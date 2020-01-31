@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-
+import {axiosWithAuth} from "../utils/axiosWithAuth"
 const initialColor = {
   color: "",
   code: { hex: "" }
@@ -10,21 +10,66 @@ const ColorList = ({ colors, updateColors }) => {
   console.log(colors);
   const [editing, setEditing] = useState(false);
   const [colorToEdit, setColorToEdit] = useState(initialColor);
+  const [newColor, setNewColor] = useState({
+    color: "",
+    code: {
+      hex: "",
+      id: Date.now()
+    }
+  })
 
   const editColor = color => {
     setEditing(true);
     setColorToEdit(color);
   };
 
+  const handleChange = event => {
+    setNewColor({
+      ...newColor,
+      [event.target.name]: event.target.value
+    })
+  }
+
+  const addColor = () => {
+    axiosWithAuth()
+      .post(`colors`, newColor)
+      .then(res => { console.log(`${newColor.color} has been added`, res)
+      axiosWithAuth()
+            .get(`colors`)
+              .then(res => {
+                console.log("Updated color list", res)
+                updateColors(res.data)
+              })
+    })
+
+  }
+
   const saveEdit = e => {
     e.preventDefault();
-    // Make a put request to save your updated color
-    // think about where will you get the id from...
-    // where is is saved right now?
+    axiosWithAuth()
+      .put(`colors/${colorToEdit.id}`, colorToEdit)
+        .then(res => {
+          console.log("this is the response from the color to edit put request", res)
+          axiosWithAuth()
+            .get(`colors`)
+              .then(res => {
+                console.log("Updated color list", res)
+                updateColors(res.data)
+              })
+        })
+        .catch(err => {
+          console.log("An error occurred while trying to update the color", err)
+        })
   };
 
   const deleteColor = color => {
-    // make a delete request to delete this color
+    axiosWithAuth()
+        .delete(`colors/${color.id}`)
+          .then(res => {
+            console.log(`The color ${color.color} was successfully deleted`, res)
+          })
+          updateColors( colors.filter(colors =>
+            colors.id !== color.id))
   };
 
   return (
@@ -82,6 +127,21 @@ const ColorList = ({ colors, updateColors }) => {
       )}
       <div className="spacer" />
       {/* stretch - build another form here to add a color */}
+      <input
+        type="text"
+        name="color"
+        value={newColor.color}
+        onChange={handleChange}
+        placeholder="name"
+      />
+      <input
+        type="color"
+        name="hex"
+        value={newColor.code.hex}
+        onChange={handleChange}
+        placeholder="hex"
+      />
+      <buton onClick={addColor}>Add new color</buton>
     </div>
   );
 };
